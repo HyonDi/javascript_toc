@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  
+  <style>
+    input {
+      width : 20px;
+      height : 20px;
+      text-align : center;
+      margin : 5px;
+    }
+    
+    button{
+      margin : 3px;
+    }
+    
+    table, tr, td{
+      text-align : center;
+    }
+  </style>
+</head>
+<body>
+  
+  <button id="startGameBtn" type="button" onclick="startGame()" >시작</button>
+  <div id="board">
+  </div>
+  
+  <table id="scoreTable" border="1" style="border-collapse:collapse">
+
+  </table>
+  
+  <div id="resultDiv"></div>
+
+  
+  <script>
+    var inputA;
+    var inputB;
+    var inputC;
+    var answerArr = [];
+    var submitlimit;
+    
+    function startGame(){
+      const board = document.getElementById("board");
+      const scoreTable = document.getElementById("scoreTable");
+      const resultDiv = document.getElementById("resultDiv");
+      const answerSpan = document.getElementById("answerSpan");
+      
+      answerArr = [];
+      board.innerHTML = "";
+      scoreTable.innerHTML = "";
+      resultDiv.innerHTML = "";
+      if(answerSpan){
+        answerSpan.remove();
+      }
+      
+      
+      submitlimit = 0;
+      
+      makeController();
+      makeRandomNum(answerArr);
+    }
+    
+    function makeController(){
+      const board = document.getElementById("board");
+      
+      let firstInput = document.createElement("input");
+      let secondInput = document.createElement("input");
+      let thirdInput = document.createElement("input");
+      
+      let submitBtn = document.createElement("button");
+      let surrenderBtn = document.createElement("button");
+      let reStartBtn = document.createElement("button");
+      
+      submitBtn.innerHTML = "제출";
+      submitBtn.onclick = getScore;
+      submitBtn.id = "submitBtn";
+      
+      surrenderBtn.innerHTML = "포기";
+      surrenderBtn.onclick = surrender;
+      surrenderBtn.id = "surrenderBtn";
+      
+      reStartBtn.innerHTML = "재시작";
+      reStartBtn.setAttribute("style","display:none");
+      reStartBtn.id = "reStartBtn";
+      reStartBtn.onclick = startGame;
+      
+      document.getElementById("startGameBtn").setAttribute("style","display:none");
+      board.appendChild(firstInput);
+      board.appendChild(secondInput);
+      board.appendChild(thirdInput);
+      board.appendChild(submitBtn);
+      board.appendChild(surrenderBtn);
+      board.appendChild(reStartBtn);
+    }
+    
+    function makeRandomNum(answerArr){
+      let number = Math.floor(Math.random() * 10);
+      
+      if(answerArr.length < 3 && answerArr.indexOf(number) < 0){
+        answerArr.push(number);
+        return makeRandomNum(answerArr);
+        
+      }else{
+        return answerArr;
+        
+      }
+    }
+    
+    
+    function checkInputNum(){
+      let numcheck = /^[0-9]{1}$/;
+      let inputNum = document.getElementsByTagName("input");
+      
+      inputA = inputNum[0].value;
+      inputB = inputNum[1].value;
+      inputC = inputNum[2].value;
+      
+      let inputNumArr = [inputA,inputB,inputC];
+      
+      // 중복숫자체크해야함>> 얼럿메세지 다르게해야함
+      for(let i = 0; i < answerArr.length; i ++){
+        
+        if(!numcheck.test(inputNum[i].value)){
+          alert("0~9 사이의 숫자를 입력해주세요.");
+          return false;
+        } 
+      }
+      
+      if(isDuplicate(inputNumArr)) {
+        alert("중복되지 않는 숫자를 입력해주세요.");
+       return false; 
+      }
+      
+      return true;
+    }
+    
+    function isDuplicate(inputNumArr)  {
+      for(let i = 0 ; i < inputNumArr.length ; i ++){
+        if(inputNumArr.indexOf(inputNumArr[i]) != inputNumArr.lastIndexOf(inputNumArr[i])){// 다르면 중복 발생.
+          return true;
+        }
+      }
+      
+      return false;
+    }
+      
+    function getScore(){
+      
+      ++submitlimit;
+      
+      if(!checkInputNum()){
+        //alert("");
+        return;
+      }
+      
+      let inputArr = [inputA, inputB, inputC];
+      let strike = 0;
+      let ball = 0;
+     
+      for(let i = 0; i < answerArr.length; i++){
+        
+        for(let j = 0; j < inputArr.length; j++){
+          
+          if(i == j){
+            if(answerArr[i] == inputArr[j]){
+              strike++;
+            } 
+            
+          }else{
+            if(answerArr[i] == inputArr[j]){
+              ball++;
+            } 
+          }
+        }
+      }
+
+      setScore(inputArr,strike,ball);
+      
+      
+      
+    }
+    
+    function setScore(inputArr,strike,ball){
+      
+      const scoreTable = document.getElementById("scoreTable");
+
+      if(submitlimit == 1){
+        let tableTr = document.createElement("tr");
+        let seq = document.createElement("td");
+        let inpuTd1 = document.createElement("td");
+        let inputTd2 = document.createElement("td");
+        let inputTd3 = document.createElement("td");
+        let strikeCnt = document.createElement("td");
+        let ballCnt = document.createElement("td");
+
+        tableTr.appendChild(seq);
+        tableTr.appendChild(inpuTd1);
+        tableTr.appendChild(inputTd2);
+        tableTr.appendChild(inputTd3);
+        tableTr.appendChild(strikeCnt);
+        tableTr.appendChild(ballCnt);
+          
+        seq.innerHTML = "회차";
+        inpuTd1.innerHTML = "첫 번째 입력값";
+        inputTd2.innerHTML = "두 번째 입력값";
+        inputTd3.innerHTML = "세 번째 입력값";
+        strikeCnt.innerHTML = "Strike";
+        ballCnt.innerHTML = "Ball";      
+
+        scoreTable.appendChild(tableTr);
+      }
+      
+      let tableTr = document.createElement("tr");
+      let seq = document.createElement("td");
+      let inpuTd1 = document.createElement("td");
+      let inputTd2 = document.createElement("td");
+      let inputTd3 = document.createElement("td");
+      let strikeCnt = document.createElement("td");
+      let ballCnt = document.createElement("td");
+
+      tableTr.appendChild(seq);
+      tableTr.appendChild(inpuTd1);
+      tableTr.appendChild(inputTd2);
+      tableTr.appendChild(inputTd3);
+      tableTr.appendChild(strikeCnt);
+      tableTr.appendChild(ballCnt);
+          
+      seq.innerHTML = submitlimit + " 회";
+      inpuTd1.innerHTML = inputArr[0];
+      inputTd2.innerHTML = inputArr[1];
+      inputTd3.innerHTML = inputArr[2];
+      strikeCnt.innerHTML = strike;
+      ballCnt.innerHTML = ball;
+      
+      scoreTable.appendChild(tableTr);
+      
+      let resultDiv = document.getElementById("resultDiv");
+      resultDiv.setAttribute("style","font-size:20px;font-weight:bold;");
+      
+      if(strike == 3){
+        setResult("Success");
+        EndGame();
+      }
+      
+      if(submitlimit >= 10){
+        setResult("Fail");
+        EndGame();
+      }
+    }
+    
+    function EndGame(){
+      document.getElementById("submitBtn").setAttribute("style","display:none");
+      document.getElementById("surrenderBtn").setAttribute("style","display:none");
+      document.getElementById("reStartBtn").setAttribute("style","display:inline-block");
+      
+      let answerSpan = document.createElement("span");
+      answerSpan.id = "answerSpan";
+      
+      let answerText = document.createTextNode("정답 : " + answerArr[0] + " / " + answerArr[1] + " / " +answerArr[2]);
+      answerSpan.appendChild(answerText);
+      document.body.appendChild(answerSpan);
+      
+    }
+  
+    function surrender(){
+      setResult("Fail");
+      EndGame();
+    }
+    
+    function setResult(result){
+      switch(result){
+        case "Success" :
+          resultDiv.innerHTML = "성공";
+          resultDiv.setAttribute("style","color:blue;");
+          break;
+        case "Fail" :
+          resultDiv.innerHTML = "실패";
+          resultDiv.setAttribute("style","color:red;");
+          break;
+      }
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
