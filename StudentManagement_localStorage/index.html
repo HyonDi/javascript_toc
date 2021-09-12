@@ -23,7 +23,6 @@
         vertical-align: middle;
 
         border: 1px solid black;
-
     }
 
     #content {
@@ -70,8 +69,56 @@
     }
 
     td{
-        text-align: center;
+        text-align: left;
     }
+
+    thead td{
+        font-weight: bold;
+    }
+
+    table{
+        border : 2px solid #F2EDE6;
+        border-top : 4px solid  #D6D1CB;
+        border-left : 0px solid white;
+        border-right : 0px solid white;
+        margin-top : 1em;
+    }
+
+    table td{
+        border-left : 0px solid white;
+        border-right : 0px solid white;
+        padding : 0.2em;
+    }
+
+    tbody tr:hover{
+        background-color: #E7D1CB;
+    }
+
+    input[type=button]{
+        border : 0px solid white;
+        background-color: #FFE7E0;
+        height : 2.5em;
+        border-radius: 5px;
+    }
+
+    input[type=button]:hover{
+        background-color: #B3A29D;
+        cursor: pointer;
+    }
+
+    input[type=text]{
+        border: 1px solid #B7B6B4;
+    }
+
+    .fa-edit{
+        color: #737270;
+    }
+
+    .fa-edit:hover{
+        color: black;
+        cursor: pointer;
+    }
+
 </style>
 
 <body>
@@ -79,7 +126,7 @@
 
         <div id="content">
             <div id="divsearch">
-                <input id="inputSearch" type="text" />
+                <input id="inputSearch" type="text" onkeydown="clickTarget('search')"/>
                 <input id="btnSearch" type="button" value="Search" onclick="search()" />
                 <input id="btnViewAll" type="button" value="View All" onclick="viewAll()"/>
             </div>
@@ -95,7 +142,7 @@
                             <td>City</td>
                             <td>Upate</td>
                         </tr>
-                    <thead>
+                    </thead>
                     <tbody>
                     </tbody>
                 </table>
@@ -113,20 +160,20 @@
                             <div id="modalClose" onclick="modalClose()">X</div>
                         </div>
                         <div class="divModalContent">
-                            <label for="inputId" class="modalLabel">ID : </label><input id="inputId" class="modalInput"
-                                type="text" />
+                            <label for="inputId" class="modalLabel">ID : </label><input id="inputId"
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')"/>
                         </div>
                         <div class="divModalContent">
                             <label for="inputName" class="modalLabel">Name : </label><input id="inputName"
-                                class="modalInput" type="text" />
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')"/>
                         </div>
                         <div class="divModalContent">
                             <label for="inputAge" class="modalLabel">Age : </label><input id="inputAge"
-                                class="modalInput" type="text" />
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')" />
                         </div>
                         <div class="divModalContent">
                             <label for="inputCity" class="modalLabel">City : </label><input id="inputCity"
-                                class="modalInput" type="text" />
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')" />
                         </div>
                         <div id="modalDivBtn">
                             <input type="button" id="insertBtn" value="Insert" onclick="insertStudent(this)" />
@@ -141,14 +188,13 @@
 </body>
 
 <script>
-    // 서치랑...., 마우스...이벤트... css...
-    var seq = 0;
+    var seq = 0; // 학생 고유값
 
     init();
 
+
     function init() {
         localStorage.clear();
-        //localStorage.removeItem("student");
 
         // 초기에 넣어둘 데이터
         setStudent("hjakng", "강현지", "26", "Seoul");
@@ -158,26 +204,27 @@
         setStudent("yjkim", "김예진", "25", "Busan");
         setStudent("jhpark", "박진희", "26", "Pyeongtaek");
         
-        // 초기 데이터 테이블에 출력
         let students = JSON.parse(localStorage.getItem("student"));
         setTable(students);
     }
+
 
     function setTable(students){
         
         let table = document.getElementById("tblList");
         let trs = document.getElementsByTagName("tr");
-        
+        let tbody = document.getElementsByTagName("tbody")[0];
+
         // row 전체삭제
         while(table.rows.length-1){
             table.deleteRow(1);
         }
+
         for(let key in students){
             let student = students[key];
 
             let row = document.createElement("tr");
             let checkbox = document.createElement("input");
-            let updateBtn = document.createElement("button");
             let idCell = document.createElement("td");
             let nameCell = document.createElement("td");
             let ageCell = document.createElement("td");
@@ -185,41 +232,42 @@
             let checkboxCell = document.createElement("td");
             let updateBtnCell = document.createElement("td");
             let editIcon = document.createElement("i");
-            editIcon.setAttribute("class","fas fa-edit");
 
+            editIcon.setAttribute("class","fas fa-edit");
             checkbox.setAttribute("type","checkbox");
             checkbox.setAttribute("value",student.no);
             checkbox.setAttribute("name","checkboxes");
-            updateBtn.setAttribute("type","button");
-            updateBtn.setAttribute("value",student.no);
-            updateBtn.appendChild(editIcon);
-            updateBtn.setAttribute("onclick","openModal(this)");
+            editIcon.setAttribute("value",student.no);
+            editIcon.setAttribute("onclick","openModal(this)");
             updateBtnCell.setAttribute("style","width:5%");
             checkboxCell.setAttribute("style","width:5%");
-
             checkboxCell.appendChild(checkbox);
-            updateBtnCell.appendChild(updateBtn);
+            updateBtnCell.appendChild(editIcon);
+
             for(let key in student){
-                
                 idCell.innerHTML = student["id"];
                 nameCell.innerHTML = student["name"];
                 ageCell.innerHTML = student["age"];
                 cityCell.innerHTML = student["city"];
 
-                table.appendChild(row);
+                tbody.appendChild(row);
                 row.appendChild(checkboxCell);
                 row.appendChild(idCell);
                 row.appendChild(nameCell);
                 row.appendChild(ageCell);
                 row.appendChild(cityCell);
                 row.appendChild(updateBtnCell);
+
+                table.appendChild(tbody);
             }
         }
+
         checkNoData();
     }
 
+
     function insertStudent(){
-        if(!validationCheck()){return;}
+        if(!validationCheck()) return;
 
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
@@ -240,9 +288,10 @@
         modalClose();
     }
 
-    function updateStudent(btn){
-        if(!validationCheck()){return;}
 
+    function updateStudent(btn){
+        if(!validationCheck()) return;
+        
         let no = btn.getAttribute("no");
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
@@ -261,19 +310,22 @@
         }
         localStorage.setItem("student",JSON.stringify(arrStudent));
 
-        if(searchValue.replace(/(\s*)/g, "")!=""){
+        if(searchValue.replace(/(\s*)/g, "") != ""){
             search();
         }else{
-            setTable(students);
+            setTable(arrStudent);
         }
+
         modalClose();
     }
+
 
     function deleteStudent(){
         let checkeValue = new Array();
         let arrStudent = new Array();
         let isConfirm = false;
-
+        let searchValue = document.getElementById("inputSearch").value;
+        
         let rootCheckbox = document.getElementById("rootCheckbox");
         const query = "input[name='checkboxes']:checked";
         const selectedEls = document.querySelectorAll(query); 
@@ -300,25 +352,34 @@
                 }
             }
         }
+
         // 다시 집어넣음.
         localStorage.setItem("student",JSON.stringify(arrStudent));
-        setTable(arrStudent);
+
+        if(searchValue.replace(/(\s*)/g, "") != ""){
+            search();
+        }else{
+            setTable(arrStudent);
+        }
         
         if(rootCheckbox.checked){
             rootCheckbox.checked = false;
         }
     }
 
+
     function viewAll(){
-        document.getElementById("inputSearch").value = "";
         let arrStudent = JSON.parse(localStorage.getItem("student"));
+        document.getElementById("inputSearch").value = "";
         setTable(arrStudent);
     }
+
 
     function checkNoData() {
         // data 없을경우 표시
         let table = document.getElementById("tblList");
         let tbody = document.querySelector("tbody");
+        let noData = "";
 
         if (table.rows.length == 1) {
             let tr = document.createElement("tr");
@@ -327,12 +388,12 @@
 
             td.appendChild(textNode);
             td.setAttribute("colspan", 6);
-            td.setAttribute("style", "background:gray");
+            td.setAttribute("style", "background:gray;text-align:center;");
             td.Id = "noData";
             tr.appendChild(td);
             tbody.appendChild(tr);
         } else {
-            let noData = document.getElementById("noData");
+            noData = document.getElementById("noData");
 
             if (noData != null) {
                 noData.remove();
@@ -340,7 +401,6 @@
         }
     }
 
-   
 
     function setStudent(id, name, age, city) {
         
@@ -364,34 +424,6 @@
         
     }
 
-    function getStudent(key, value) {
-        // 학생 1명?
-        let arrStudent = new Array();
-        let jsonStudent = new Object();
-
-        switch (key) {
-            case "All":
-                arrStudent =JSON.parse(localStorage.getItem("student"));
-                break;
-
-            case "No":
-
-                break;
-
-            case "Id":
-
-                break;
-
-            case "Name":
-
-                break;
-
-            default:
-
-                break;
-
-        }
-    }
 
     function selectAll(){
         let root = document.getElementById("rootCheckbox");
@@ -402,16 +434,19 @@
         })
     }
     
+
     function search(){
         const searchValue = document.getElementById("inputSearch").value;
         
         let arrStudent = JSON.parse(localStorage.getItem("student"));
         let searchStudent = new Array();
 
-        if(searchValue.replace(/(\s*)/g, "")!=""){
+        if(searchValue.replace(/(\s*)/g, "") != ""){
             searchStudent = arrStudent.filter(
-                info => info.id.match(new RegExp(searchValue, "i")) || info.name.match(new RegExp(searchValue, "i")) || 
-                        info.age.includes(searchValue) || info.city.match(new RegExp(searchValue, "i"))
+                info => info.id.match(new RegExp(searchValue, "i")) || 
+                        info.name.match(new RegExp(searchValue, "i")) || 
+                        info.age.includes(searchValue) || 
+                        info.city.match(new RegExp(searchValue, "i"))
                         );
         }else{
             searchStudent = arrStudent;
@@ -420,42 +455,67 @@
         setTable(searchStudent);
     }
 
+
+    function clickTarget(target){
+        if(event.keyCode == 13){
+            switch(target){
+                case "search":
+                    search();
+                    break;
+                case "insert":
+                    document.getElementById("insertBtn").click();
+                    break;
+            }
+        }
+    }
+
+
     // ---Modal
     function openModal(btn) {
+        let targetNo = "";
         if(btn){
             // updateModal
+            targetNo = btn.getAttribute("value");
+
             let arrStudent = JSON.parse(localStorage.getItem("student"));
             let insertBtn = document.getElementById("insertBtn");
             let target;
 
             for(i = 0; i < arrStudent.length; i++){
 
-                if(arrStudent[i].no == btn.value){
+                
+                if(arrStudent[i].no == targetNo){
                     target = arrStudent[i];
                 }
             }
+
             fillModal(target.id, target.name, target.age, target.city);
 
             insertBtn.setAttribute("value","Update");
-            insertBtn.setAttribute("no",btn.value);
+            insertBtn.setAttribute("no",targetNo);
             insertBtn.setAttribute("onclick","updateStudent(this)");
+
         }else{
             //insertModal
             insertBtn.setAttribute("value","Insert");
-            insertBtn.setAttribute("no","");
+            insertBtn.setAttribute("no",targetNo);
             insertBtn.setAttribute("onclick","insertStudent()");
         }
+
         modalShow();
     }
+
 
     function modalShow() {
         document.querySelector(".background").className = "background show";
     }
 
+
     function modalClose() {
         document.querySelector(".background").className = "background";
         reset();
     }
+
 
     function fillModal(id,name,age,city){
         document.getElementById("inputId").value = id;
@@ -464,12 +524,14 @@
         document.getElementById("inputCity").value = city;
     }
 
+
     function reset(){
         document.getElementById("inputId").value = "";
         document.getElementById("inputName").value = "";
         document.getElementById("inputAge").value = "";
         document.getElementById("inputCity").value = "";
     }
+
 
     function validationCheck(){
         let flag = true;
@@ -479,47 +541,18 @@
         let city = document.getElementById("inputCity").value;
 
         try{
-            if(!idValid(id)) throw new validationError("아이디는 특수문자없이 1~30글자로 작성");
-            if(!nameValid(name)) throw new validationError("이름은 한글/영어 1~20글자로 작성");
-            if(!numberValid(age)) throw new validationError("나이는 숫자로 작성");
-            if(!limitCntValid(city,200)) throw new validationError("주소는 1~200글자로 작성");
+            if(!idValid(id)) throw new validationError("아이디는 특수문자없이 1~30글자로 작성해주세요.");
+            if(!nameValid(name)) throw new validationError("이름은 한글/영어 1~20글자로 작성해주세요.");
+            if(!numberValid(age)) throw new validationError("나이는 숫자로 작성해주세요.");
+            if(!limitCntValid(city,200)) throw new validationError("주소는 1~200글자로 작성해주세요.");
+
         }catch(err){
             alert(err.message);
             flag = false;
         }
+
         return flag;
     }
-    
-    // 쿠키로 하는 부분은 나중에보자
-    // function setCookie(id, name, age, city) {
-
-    //     let str = "";
-    //     let no = getNo();
-    //     let arr = [no,id,name,age,city];
-    //     let arr2 = ["no","id", "name", "age", "city"];
-    //     for(var key in arr){
-    //         if(str !="") str += ",";
-    //         str += arr2[key] + ":" + arr[key];
-    //     }
-    //     document.cookie = str;
-
-    // }
-
-    // function getCookie(no) {
-    //     var nameEQ = no + "=";
-    //     var students = document.cookie.split(';');
-    //     alert("students.length = " + students.length);
-    //     alert("document.cookie 값 : " + document.cookie);
-    //     for (var i = 0; i < students.length; i++) {
-    //         var oneOfStudents = students[i];
-    //         while (oneOfStudents.charAt(0) == ' ') oneOfStudents = oneOfStudents.substring(1, oneOfStudents.length);
-    //         if (oneOfStudents.indexOf(nameEQ) == 0) return oneOfStudents.substring(nameEQ.length, oneOfStudents.length);
-    //     }
-    //     return null;
-    // }
-
-
-
 </script>
 
 </html>
