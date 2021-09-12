@@ -22,7 +22,6 @@
         display: inline-block;
         vertical-align: middle;
 
-        border: 1px solid black;
     }
 
     #content {
@@ -150,7 +149,7 @@
             </div>
 
             <div id="divBtn">
-                <input type="button" value="Insert" onclick="openModal()" />
+                <input type="button" id="insertModalBtn" value="Insert" onclick="openModal()" />
                 <input type="button" value="Delete" onclick="deleteStudent()" />
             </div>
 
@@ -515,6 +514,7 @@
     function modalClose() {
         document.querySelector(".background").className = "background";
         reset();
+        document.getElementById("inputSearch").focus();
     }
 
 
