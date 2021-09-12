@@ -10,6 +10,12 @@
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous">
 <script type="text/javascript" src="./regExValidations.js"></script>
 <script type="text/javascript" src="./customException.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Allison&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Allison&family=Gowun+Dodum&display=swap" rel="stylesheet">
 
 <style>
     #root {
@@ -33,7 +39,7 @@
 
     #divsearch {
         text-align: right;
-        margin: 5% 5% 1% 0;
+        margin: 0 5% 1% 0;
     }
 
     #divBtn {
@@ -67,10 +73,6 @@
         margin: 0.5em;
     }
 
-    td{
-        text-align: left;
-    }
-
     thead td{
         font-weight: bold;
     }
@@ -87,7 +89,9 @@
     table td{
         border-left : 0px solid white;
         border-right : 0px solid white;
-        padding : 0.2em;
+        text-align: left;
+        padding : 0.5em;
+        font-family: 'Gowun Dodum', sans-serif;
     }
 
     tbody tr:hover{
@@ -99,6 +103,7 @@
         background-color: #FFE7E0;
         height : 2.5em;
         border-radius: 5px;
+        font-family: 'Gowun Dodum', sans-serif;
     }
 
     input[type=button]:hover{
@@ -108,6 +113,11 @@
 
     input[type=text]{
         border: 1px solid #B7B6B4;
+        font-family: 'Gowun Dodum', sans-serif;
+    }
+
+    label{
+        font-family: 'Gowun Dodum', sans-serif;
     }
 
     .fa-edit{
@@ -119,12 +129,21 @@
         cursor: pointer;
     }
 
+    h1{
+        position: relative;
+        left: 45%;
+        margin-top : 2%;
+        font-family: 'Allison', cursive;
+        color : #545452;
+        font-size: 3em;
+    }
 </style>
 
 <body>
     <div id="root">
 
         <div id="content">
+            <h1>Student List</h1>
             <div id="divsearch">
                 <input id="inputSearch" type="text" onkeydown="clickTarget('search')"/>
                 <input id="btnSearch" type="button" value="Search" onclick="search()" />
