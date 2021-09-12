@@ -8,6 +8,8 @@
 </head>
 <link rel="stylesheet" href="./modal.css" />
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous">
+<script type="text/javascript" src="./regExValidations.js"></script>
+<script type="text/javascript" src="./customException.js"></script>
 
 <style>
     #root {
@@ -78,7 +80,8 @@
         <div id="content">
             <div id="divsearch">
                 <input id="inputSearch" type="text" />
-                <input id="btnSearch" type="button" value="Search" />
+                <input id="btnSearch" type="button" value="Search" onclick="search()" />
+                <input id="btnViewAll" type="button" value="View All" onclick="viewAll()"/>
             </div>
 
             <div id="divList">
@@ -138,11 +141,10 @@
 </body>
 
 <script>
-    // 내일 : 정규식 체크랑...서치랑...., 마우스...이벤트... css...
+    // 서치랑...., 마우스...이벤트... css...
     var seq = 0;
 
     init();
-    checkNoData();
 
     function init() {
         localStorage.clear();
@@ -162,6 +164,7 @@
     }
 
     function setTable(students){
+        
         let table = document.getElementById("tblList");
         let trs = document.getElementsByTagName("tr");
         
@@ -191,7 +194,8 @@
             updateBtn.setAttribute("value",student.no);
             updateBtn.appendChild(editIcon);
             updateBtn.setAttribute("onclick","openModal(this)");
-
+            updateBtnCell.setAttribute("style","width:5%");
+            checkboxCell.setAttribute("style","width:5%");
 
             checkboxCell.appendChild(checkbox);
             updateBtnCell.appendChild(updateBtn);
@@ -211,32 +215,41 @@
                 row.appendChild(updateBtnCell);
             }
         }
+        checkNoData();
     }
 
     function insertStudent(){
-        
-        validationCheck();
+        if(!validationCheck()){return;}
 
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
         let age = document.getElementById("inputAge").value;
         let city = document.getElementById("inputCity").value;
-        setStudent(id,name,age,city);
-    
-        let students = JSON.parse(localStorage.getItem("student"));
-        setTable(students);
-        modalClose();
+        let searchValue = document.getElementById("inputSearch").value;
+        let students = "";
 
+        setStudent(id,name,age,city);
+        students = JSON.parse(localStorage.getItem("student"));
+
+        if(searchValue.replace(/(\s*)/g, "")!=""){
+            search();
+        }else{
+            setTable(students);
+        }
+
+        modalClose();
     }
 
     function updateStudent(btn){
-        // no값 변경 후 다시집어넣는다.
+        if(!validationCheck()){return;}
+
         let no = btn.getAttribute("no");
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
         let age = document.getElementById("inputAge").value;
         let city = document.getElementById("inputCity").value;
         let arrStudent = JSON.parse(localStorage.getItem("student"));
+        let searchValue = document.getElementById("inputSearch").value;
 
         for (let i = 0; i < arrStudent.length; i++) {
             if(arrStudent[i].no == no){
@@ -247,26 +260,37 @@
             }
         }
         localStorage.setItem("student",JSON.stringify(arrStudent));
-        setTable(arrStudent);
+
+        if(searchValue.replace(/(\s*)/g, "")!=""){
+            search();
+        }else{
+            setTable(students);
+        }
         modalClose();
     }
 
     function deleteStudent(){
+        let checkeValue = new Array();
+        let arrStudent = new Array();
+        let isConfirm = false;
 
-        let isConfirm = confirm("삭제하시겠습니까?");
-        if(!isConfirm) return;
-            
-        
-        // 체크박스의 value 가져와서 삭제
+        let rootCheckbox = document.getElementById("rootCheckbox");
         const query = "input[name='checkboxes']:checked";
         const selectedEls = document.querySelectorAll(query); 
 
-        let checkeValue = new Array();
+        if(selectedEls.length == 0){
+            alert("삭제할 대상을 선택하세요.");
+            return;
+        }
+
+        isConfirm = confirm("삭제하시겠습니까?");
+        if(!isConfirm) return;
+
         selectedEls.forEach((el) => {
             checkeValue.push(el.value);
         })
 
-        let arrStudent = JSON.parse(localStorage.getItem("student"));
+        arrStudent = JSON.parse(localStorage.getItem("student"));
         
         // 위 배열에서 no가 checkeValue면 삭제.
         for (let i = 0; i < arrStudent.length; i++) {
@@ -276,11 +300,19 @@
                 }
             }
         }
-
         // 다시 집어넣음.
         localStorage.setItem("student",JSON.stringify(arrStudent));
         setTable(arrStudent);
-        checkNoData();
+        
+        if(rootCheckbox.checked){
+            rootCheckbox.checked = false;
+        }
+    }
+
+    function viewAll(){
+        document.getElementById("inputSearch").value = "";
+        let arrStudent = JSON.parse(localStorage.getItem("student"));
+        setTable(arrStudent);
     }
 
     function checkNoData() {
@@ -370,9 +402,26 @@
         })
     }
     
+    function search(){
+        const searchValue = document.getElementById("inputSearch").value;
+        
+        let arrStudent = JSON.parse(localStorage.getItem("student"));
+        let searchStudent = new Array();
+
+        if(searchValue.replace(/(\s*)/g, "")!=""){
+            searchStudent = arrStudent.filter(
+                info => info.id.match(new RegExp(searchValue, "i")) || info.name.match(new RegExp(searchValue, "i")) || 
+                        info.age.includes(searchValue) || info.city.match(new RegExp(searchValue, "i"))
+                        );
+        }else{
+            searchStudent = arrStudent;
+        }
+
+        setTable(searchStudent);
+    }
+
     // ---Modal
     function openModal(btn) {
-        // btn 이 잘못넘어옴
         if(btn){
             // updateModal
             let arrStudent = JSON.parse(localStorage.getItem("student"));
@@ -423,15 +472,22 @@
     }
 
     function validationCheck(){
+        let flag = true;
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
         let age = document.getElementById("inputAge").value;
         let city = document.getElementById("inputCity").value;
 
-        if(!idValid(id)) return false;
-        if(!nameValid(name)) return false;
-        if(!numberValid(age)) return false;
-        if(!limitCntValid(city,200)) return false;
+        try{
+            if(!idValid(id)) throw new validationError("아이디는 특수문자없이 1~30글자로 작성");
+            if(!nameValid(name)) throw new validationError("이름은 한글/영어 1~20글자로 작성");
+            if(!numberValid(age)) throw new validationError("나이는 숫자로 작성");
+            if(!limitCntValid(city,200)) throw new validationError("주소는 1~200글자로 작성");
+        }catch(err){
+            alert(err.message);
+            flag = false;
+        }
+        return flag;
     }
     
     // 쿠키로 하는 부분은 나중에보자
