@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+</head>
+  <style>
+    #boxWidth,#boxHeight{
+      width :30px;
+    }
+    
+    .redStar{
+      color : red;
+    }
+  </style>
+  <script>
+    
+    
+    function CreateBox(){
+      //div 초기화
+      document.getElementById("boxDiv").innerText="";
+      
+      // 입력받은 값
+      const boxWidth = document.getElementById("boxWidth").value;
+      const boxHeight = document.getElementById("boxHeight").value;
+      
+      if(!isNumTest(boxWidth) || !isNumTest(boxHeight)){
+        alert("숫자(자연수)를 입력해주세요.");
+        return;
+      }
+      
+      for(i=0;i<boxWidth;i++){
+        const boxItem = document.createElement("div");
+        
+        for(j=0;j<boxHeight;j++){
+          const star = document.createElement("b");
+          star.innerHTML = "*&emsp;";
+          star.id = i + "_" + j;
+          
+          //맨첫번째 별을 빨간색으로 지정
+          if(i == 0 && j == 0){
+            star.classList.add("redStar");
+          }
+          
+          boxItem.appendChild(star);
+          
+        }
+        const boxDiv = document.getElementById("boxDiv");
+        boxDiv.appendChild(boxItem);
+      }
+      
+      document.getElementById("currentBoxWidth").value = boxWidth;
+      document.getElementById("currentBoxHeight").value = boxHeight;
+    }
+    
+    
+    document.onkeydown = function(e) {
+      
+      if(37 <= e.keyCode && e.keyCode <= 40)
+      {
+        // 현재 빨강별을 검정으로 변경
+        const currentRedStar = document.getElementsByClassName("redStar")[0];
+        currentRedStar.classList.remove("redStar");
+        
+        // 빨강으로 변경할 위치
+        var redheight = currentRedStar.id.split("_")[0];//세로
+        var redwidth = currentRedStar.id.split("_")[1];//가로
+        
+        // 만들어져있는 박스의 길이
+        const totalheight = document.getElementById("currentBoxHeight").value;
+        const totalwidth = document.getElementById("currentBoxWidth").value;
+        
+        // 움직인 곳의 별을 빨강으로 변경
+        switch (e.keyCode) {
+            case 37://왼쪽
+                if(redwidth>0){
+                  redwidth = redwidth * 1 - 1;
+                }
+                break;
+            
+            case 38://위
+                if(redheight>0){
+                  redheight = redheight * 1 - 1;
+                }
+                break;
+            
+            case 39://오른쪽
+                if(redwidth*1+1 < totalheight){
+                  redwidth = redwidth * 1 + 1;
+                }
+                break;
+            
+            case 40://아래
+                if(redheight*1+1 < totalwidth){
+                  redheight = redheight * 1 + 1;
+                }
+                break;
+        }
+        //alert(redheight + "_" + redwidth + "\n" + totalheight +"_"+totalwidth);
+        const newRedStar = document.getElementById(redheight + "_" + redwidth);
+        newRedStar.classList.add("redStar");
+      }
+    };
+    
+  //숫자체크함수
+  function isNumTest(inputNum){
+    numcheck =  /^[0-9]*$/g;
+    if(numcheck.test(inputNum)){
+      return true;
+    }else{
+      //alert("숫자(자연수)를 입력해주세요.");
+      return false;
+    }
+  }
+  </script>
+<body>
+  <input id="boxHeight" type="text"/> X <input id="boxWidth" type="text"/>
+  <input id="createBtn" type="button" value="Create" onclick="CreateBox()"/>
+
+  <div id="boxDiv" style="margin:10px;" >
+    
+  </div>
+  
+  <input id="currentBoxWidth" type="hidden"/>
+  <input id="currentBoxHeight" type="hidden"/>
+</body>
+</html>
