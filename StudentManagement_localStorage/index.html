@@ -8,6 +8,8 @@
 </head>
 <link rel="stylesheet" href="./modal.css" />
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous">
+<script type="text/javascript" src="./regExValidations.js"></script>
+<script type="text/javascript" src="./customException.js"></script>
 
 <style>
     #root {
@@ -19,8 +21,6 @@
 
         display: inline-block;
         vertical-align: middle;
-
-        border: 1px solid black;
 
     }
 
@@ -68,8 +68,57 @@
     }
 
     td{
-        text-align: center;
+        text-align: left;
     }
+
+    thead td{
+        font-weight: bold;
+    }
+
+    table{
+        border : 2px solid #F2EDE6;
+        border-top : 4px solid  #D6D1CB;
+        border-left : 0px solid white;
+        border-right : 0px solid white;
+        margin-top : 1em;
+        margin-bottom : 0.5em;
+    }
+
+    table td{
+        border-left : 0px solid white;
+        border-right : 0px solid white;
+        padding : 0.2em;
+    }
+
+    tbody tr:hover{
+        background-color: #E7D1CB;
+    }
+
+    input[type=button]{
+        border : 0px solid white;
+        background-color: #FFE7E0;
+        height : 2.5em;
+        border-radius: 5px;
+    }
+
+    input[type=button]:hover{
+        background-color: #B3A29D;
+        cursor: pointer;
+    }
+
+    input[type=text]{
+        border: 1px solid #B7B6B4;
+    }
+
+    .fa-edit{
+        color: #737270;
+    }
+
+    .fa-edit:hover{
+        color: black;
+        cursor: pointer;
+    }
+
 </style>
 
 <body>
@@ -77,8 +126,9 @@
 
         <div id="content">
             <div id="divsearch">
-                <input id="inputSearch" type="text" />
-                <input id="btnSearch" type="button" value="Search" />
+                <input id="inputSearch" type="text" onkeydown="clickTarget('search')"/>
+                <input id="btnSearch" type="button" value="Search" onclick="search()" />
+                <input id="btnViewAll" type="button" value="View All" onclick="viewAll()"/>
             </div>
 
             <div id="divList">
@@ -92,14 +142,14 @@
                             <td>City</td>
                             <td>Upate</td>
                         </tr>
-                    <thead>
+                    </thead>
                     <tbody>
                     </tbody>
                 </table>
             </div>
 
             <div id="divBtn">
-                <input type="button" value="Insert" onclick="openModal()" />
+                <input type="button" id="insertModalBtn" value="Insert" onclick="openModal()" />
                 <input type="button" value="Delete" onclick="deleteStudent()" />
             </div>
 
@@ -110,20 +160,20 @@
                             <div id="modalClose" onclick="modalClose()">X</div>
                         </div>
                         <div class="divModalContent">
-                            <label for="inputId" class="modalLabel">ID : </label><input id="inputId" class="modalInput"
-                                type="text" />
+                            <label for="inputId" class="modalLabel">ID : </label><input id="inputId"
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')"/>
                         </div>
                         <div class="divModalContent">
                             <label for="inputName" class="modalLabel">Name : </label><input id="inputName"
-                                class="modalInput" type="text" />
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')"/>
                         </div>
                         <div class="divModalContent">
                             <label for="inputAge" class="modalLabel">Age : </label><input id="inputAge"
-                                class="modalInput" type="text" />
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')" />
                         </div>
                         <div class="divModalContent">
                             <label for="inputCity" class="modalLabel">City : </label><input id="inputCity"
-                                class="modalInput" type="text" />
+                                class="modalInput" type="text" onkeydown="clickTarget('insert')" />
                         </div>
                         <div id="modalDivBtn">
                             <input type="button" id="insertBtn" value="Insert" onclick="insertStudent(this)" />
@@ -138,15 +188,13 @@
 </body>
 
 <script>
-    // 내일 : 정규식 체크랑...서치랑...., 마우스...이벤트... css...
-    var seq = 0;
+    var seq = 0; // 학생 고유값
 
     init();
-    checkNoData();
+
 
     function init() {
         localStorage.clear();
-        //localStorage.removeItem("student");
 
         // 초기에 넣어둘 데이터
         setStudent("hjakng", "강현지", "26", "Seoul");
@@ -156,25 +204,27 @@
         setStudent("yjkim", "김예진", "25", "Busan");
         setStudent("jhpark", "박진희", "26", "Pyeongtaek");
         
-        // 초기 데이터 테이블에 출력
         let students = JSON.parse(localStorage.getItem("student"));
         setTable(students);
     }
 
+
     function setTable(students){
+        
         let table = document.getElementById("tblList");
         let trs = document.getElementsByTagName("tr");
-        
+        let tbody = document.getElementsByTagName("tbody")[0];
+
         // row 전체삭제
         while(table.rows.length-1){
             table.deleteRow(1);
         }
+
         for(let key in students){
             let student = students[key];
 
             let row = document.createElement("tr");
             let checkbox = document.createElement("input");
-            let updateBtn = document.createElement("button");
             let idCell = document.createElement("td");
             let nameCell = document.createElement("td");
             let ageCell = document.createElement("td");
@@ -182,61 +232,73 @@
             let checkboxCell = document.createElement("td");
             let updateBtnCell = document.createElement("td");
             let editIcon = document.createElement("i");
-            editIcon.setAttribute("class","fas fa-edit");
 
+            editIcon.setAttribute("class","fas fa-edit");
             checkbox.setAttribute("type","checkbox");
             checkbox.setAttribute("value",student.no);
             checkbox.setAttribute("name","checkboxes");
-            updateBtn.setAttribute("type","button");
-            updateBtn.setAttribute("value",student.no);
-            updateBtn.appendChild(editIcon);
-            updateBtn.setAttribute("onclick","openModal(this)");
-
-
+            editIcon.setAttribute("value",student.no);
+            editIcon.setAttribute("onclick","openModal(this)");
+            updateBtnCell.setAttribute("style","width:5%");
+            checkboxCell.setAttribute("style","width:5%");
             checkboxCell.appendChild(checkbox);
-            updateBtnCell.appendChild(updateBtn);
+            updateBtnCell.appendChild(editIcon);
+
             for(let key in student){
-                
                 idCell.innerHTML = student["id"];
                 nameCell.innerHTML = student["name"];
                 ageCell.innerHTML = student["age"];
                 cityCell.innerHTML = student["city"];
 
-                table.appendChild(row);
+                tbody.appendChild(row);
                 row.appendChild(checkboxCell);
                 row.appendChild(idCell);
                 row.appendChild(nameCell);
                 row.appendChild(ageCell);
                 row.appendChild(cityCell);
                 row.appendChild(updateBtnCell);
+
+                table.appendChild(tbody);
             }
         }
+
+        checkNoData();
     }
 
+
     function insertStudent(){
-        
-        validationCheck();
+        if(!validationCheck()) return;
 
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
         let age = document.getElementById("inputAge").value;
         let city = document.getElementById("inputCity").value;
-        setStudent(id,name,age,city);
-    
-        let students = JSON.parse(localStorage.getItem("student"));
-        setTable(students);
-        modalClose();
+        let searchValue = document.getElementById("inputSearch").value;
+        let students = "";
 
+        setStudent(id,name,age,city);
+        students = JSON.parse(localStorage.getItem("student"));
+
+        if(searchValue.replace(/(\s*)/g, "")!=""){
+            search();
+        }else{
+            setTable(students);
+        }
+
+        modalClose();
     }
 
+
     function updateStudent(btn){
-        // no값 변경 후 다시집어넣는다.
+        if(!validationCheck()) return;
+        
         let no = btn.getAttribute("no");
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
         let age = document.getElementById("inputAge").value;
         let city = document.getElementById("inputCity").value;
         let arrStudent = JSON.parse(localStorage.getItem("student"));
+        let searchValue = document.getElementById("inputSearch").value;
 
         for (let i = 0; i < arrStudent.length; i++) {
             if(arrStudent[i].no == no){
@@ -247,26 +309,40 @@
             }
         }
         localStorage.setItem("student",JSON.stringify(arrStudent));
-        setTable(arrStudent);
+
+        if(searchValue.replace(/(\s*)/g, "") != ""){
+            search();
+        }else{
+            setTable(arrStudent);
+        }
+
         modalClose();
     }
 
-    function deleteStudent(){
 
-        let isConfirm = confirm("삭제하시겠습니까?");
-        if(!isConfirm) return;
-            
+    function deleteStudent(){
+        let checkeValue = new Array();
+        let arrStudent = new Array();
+        let isConfirm = false;
+        let searchValue = document.getElementById("inputSearch").value;
         
-        // 체크박스의 value 가져와서 삭제
+        let rootCheckbox = document.getElementById("rootCheckbox");
         const query = "input[name='checkboxes']:checked";
         const selectedEls = document.querySelectorAll(query); 
 
-        let checkeValue = new Array();
+        if(selectedEls.length == 0){
+            alert("삭제할 대상을 선택하세요.");
+            return;
+        }
+
+        isConfirm = confirm("삭제하시겠습니까?");
+        if(!isConfirm) return;
+
         selectedEls.forEach((el) => {
             checkeValue.push(el.value);
         })
 
-        let arrStudent = JSON.parse(localStorage.getItem("student"));
+        arrStudent = JSON.parse(localStorage.getItem("student"));
         
         // 위 배열에서 no가 checkeValue면 삭제.
         for (let i = 0; i < arrStudent.length; i++) {
@@ -279,14 +355,31 @@
 
         // 다시 집어넣음.
         localStorage.setItem("student",JSON.stringify(arrStudent));
-        setTable(arrStudent);
-        checkNoData();
+
+        if(searchValue.replace(/(\s*)/g, "") != ""){
+            search();
+        }else{
+            setTable(arrStudent);
+        }
+        
+        if(rootCheckbox.checked){
+            rootCheckbox.checked = false;
+        }
     }
+
+
+    function viewAll(){
+        let arrStudent = JSON.parse(localStorage.getItem("student"));
+        document.getElementById("inputSearch").value = "";
+        setTable(arrStudent);
+    }
+
 
     function checkNoData() {
         // data 없을경우 표시
         let table = document.getElementById("tblList");
         let tbody = document.querySelector("tbody");
+        let noData = "";
 
         if (table.rows.length == 1) {
             let tr = document.createElement("tr");
@@ -295,12 +388,12 @@
 
             td.appendChild(textNode);
             td.setAttribute("colspan", 6);
-            td.setAttribute("style", "background:gray");
+            td.setAttribute("style", "background:gray;text-align:center;");
             td.Id = "noData";
             tr.appendChild(td);
             tbody.appendChild(tr);
         } else {
-            let noData = document.getElementById("noData");
+            noData = document.getElementById("noData");
 
             if (noData != null) {
                 noData.remove();
@@ -308,7 +401,6 @@
         }
     }
 
-   
 
     function setStudent(id, name, age, city) {
         
@@ -332,34 +424,6 @@
         
     }
 
-    function getStudent(key, value) {
-        // 학생 1명?
-        let arrStudent = new Array();
-        let jsonStudent = new Object();
-
-        switch (key) {
-            case "All":
-                arrStudent =JSON.parse(localStorage.getItem("student"));
-                break;
-
-            case "No":
-
-                break;
-
-            case "Id":
-
-                break;
-
-            case "Name":
-
-                break;
-
-            default:
-
-                break;
-
-        }
-    }
 
     function selectAll(){
         let root = document.getElementById("rootCheckbox");
@@ -370,43 +434,89 @@
         })
     }
     
+
+    function search(){
+        const searchValue = document.getElementById("inputSearch").value;
+        
+        let arrStudent = JSON.parse(localStorage.getItem("student"));
+        let searchStudent = new Array();
+
+        if(searchValue.replace(/(\s*)/g, "") != ""){
+            searchStudent = arrStudent.filter(
+                info => info.id.match(new RegExp(searchValue, "i")) || 
+                        info.name.match(new RegExp(searchValue, "i")) || 
+                        info.age.includes(searchValue) || 
+                        info.city.match(new RegExp(searchValue, "i"))
+                        );
+        }else{
+            searchStudent = arrStudent;
+        }
+
+        setTable(searchStudent);
+    }
+
+
+    function clickTarget(target){
+        if(event.keyCode == 13){
+            switch(target){
+                case "search":
+                    search();
+                    break;
+                case "insert":
+                    document.getElementById("insertBtn").click();
+                    break;
+            }
+        }
+    }
+
+
     // ---Modal
     function openModal(btn) {
-        // btn 이 잘못넘어옴
+        let targetNo = "";
         if(btn){
             // updateModal
+            targetNo = btn.getAttribute("value");
+
             let arrStudent = JSON.parse(localStorage.getItem("student"));
             let insertBtn = document.getElementById("insertBtn");
             let target;
 
             for(i = 0; i < arrStudent.length; i++){
 
-                if(arrStudent[i].no == btn.value){
+                
+                if(arrStudent[i].no == targetNo){
                     target = arrStudent[i];
                 }
             }
+
             fillModal(target.id, target.name, target.age, target.city);
 
             insertBtn.setAttribute("value","Update");
-            insertBtn.setAttribute("no",btn.value);
+            insertBtn.setAttribute("no",targetNo);
             insertBtn.setAttribute("onclick","updateStudent(this)");
+
         }else{
             //insertModal
             insertBtn.setAttribute("value","Insert");
-            insertBtn.setAttribute("no","");
+            insertBtn.setAttribute("no",targetNo);
             insertBtn.setAttribute("onclick","insertStudent()");
         }
+
         modalShow();
     }
+
 
     function modalShow() {
         document.querySelector(".background").className = "background show";
     }
 
+
     function modalClose() {
         document.querySelector(".background").className = "background";
         reset();
+        document.getElementById("inputSearch").focus();
     }
+
 
     function fillModal(id,name,age,city){
         document.getElementById("inputId").value = id;
@@ -415,6 +525,7 @@
         document.getElementById("inputCity").value = city;
     }
 
+
     function reset(){
         document.getElementById("inputId").value = "";
         document.getElementById("inputName").value = "";
@@ -422,48 +533,27 @@
         document.getElementById("inputCity").value = "";
     }
 
+
     function validationCheck(){
+        let flag = true;
         let id = document.getElementById("inputId").value;
         let name = document.getElementById("inputName").value;
         let age = document.getElementById("inputAge").value;
         let city = document.getElementById("inputCity").value;
 
-        if(!idValid(id)) return false;
-        if(!nameValid(name)) return false;
-        if(!numberValid(age)) return false;
-        if(!limitCntValid(city,200)) return false;
+        try{
+            if(!idValid(id)) throw new validationError("아이디는 특수문자없이 1~30글자로 작성해주세요.");
+            if(!nameValid(name)) throw new validationError("이름은 한글/영어 1~20글자로 작성해주세요.");
+            if(!numberValid(age)) throw new validationError("나이는 숫자로 작성해주세요.");
+            if(!limitCntValid(city,200)) throw new validationError("주소는 1~200글자로 작성해주세요.");
+
+        }catch(err){
+            alert(err.message);
+            flag = false;
+        }
+
+        return flag;
     }
-    
-    // 쿠키로 하는 부분은 나중에보자
-    // function setCookie(id, name, age, city) {
-
-    //     let str = "";
-    //     let no = getNo();
-    //     let arr = [no,id,name,age,city];
-    //     let arr2 = ["no","id", "name", "age", "city"];
-    //     for(var key in arr){
-    //         if(str !="") str += ",";
-    //         str += arr2[key] + ":" + arr[key];
-    //     }
-    //     document.cookie = str;
-
-    // }
-
-    // function getCookie(no) {
-    //     var nameEQ = no + "=";
-    //     var students = document.cookie.split(';');
-    //     alert("students.length = " + students.length);
-    //     alert("document.cookie 값 : " + document.cookie);
-    //     for (var i = 0; i < students.length; i++) {
-    //         var oneOfStudents = students[i];
-    //         while (oneOfStudents.charAt(0) == ' ') oneOfStudents = oneOfStudents.substring(1, oneOfStudents.length);
-    //         if (oneOfStudents.indexOf(nameEQ) == 0) return oneOfStudents.substring(nameEQ.length, oneOfStudents.length);
-    //     }
-    //     return null;
-    // }
-
-
-
 </script>
 
 </html>

@@ -22,7 +22,7 @@ function idValid(str){
 }
 
 // 한글, 영어 20글자까지
-function nameValid(){
+function nameValid(str){
     let result = "";
     const regEx = /^[ㄱ-ㅎ|가-힣|a-z|A-Z|]{1,20}$/;
     
@@ -97,7 +97,7 @@ function hexcolorValid(str){
 // 숫자로만 이루어져있는지(자연수)
 function numberValid(str){
     let result = "";
-    const regEx = /^[0-9]{1}$/;
+    const regEx = /^[0-9]{1,3}$/;
 
     result = regEx.test(str);
     return result;
@@ -133,7 +133,7 @@ function koValid(str){
 // 글자수제한
 function limitCntValid(str,num){
     let result = "";
-    const regEx = new RegExp('^*{1,'+num+'}$');
+    const regEx = new RegExp('^.{1,'+num+'}$');
 
     result = regEx.test(str);
     return result;
